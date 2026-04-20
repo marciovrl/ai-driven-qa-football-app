@@ -1,0 +1,89 @@
+[
+  {
+    "id": 1,
+    "name": "Associação Portuguesa de Desportos",
+    "address": "São Paulo, São Paulo, Brazil",
+    "nickname": "Lusa",
+    "titles": [
+      {
+        "competition": "Fita Azul Internacional",
+        "year": 1951
+      },
+      {
+        "competition": "Fita Azul Internacional",
+        "year": 1953
+      },
+      {
+        "competition": "Fita Azul Internacional",
+        "year": 1954
+      },
+
+      {
+        "competition": "Campeonato Brasileiro Série B",
+        "year": 2011
+      },
+
+      {
+        "competition": "Torneio Rio-São Paulo",
+        "year": 1952
+      },
+      {
+        "competition": "Torneio Rio-São Paulo",
+        "year": 1955
+      },
+
+      {
+        "competition": "Campeonato Paulista",
+        "year": 1935
+      },
+      {
+        "competition": "Campeonato Paulista",
+        "year": 1936
+      },
+      {
+        "competition": "Campeonato Paulista",
+        "year": 1973
+      },
+
+      {
+        "competition": "Copa Estado de São Paulo",
+        "year": 1973
+      },
+      {
+        "competition": "Copa Estado de São Paulo",
+        "year": 1976
+      },
+
+      {
+        "competition": "Copa Paulista",
+        "year": 2020
+      },
+
+      {
+        "competition": "Campeonato Paulista Série A2",
+        "year": 2007
+      },
+      {
+        "competition": "Campeonato Paulista Série A2",
+        "year": 2013
+      },
+      {
+        "competition": "Campeonato Paulista Série A2",
+        "year": 2022
+      },
+
+      {
+        "competition": "Torneio Início Paulista",
+        "year": 1935
+      },
+      {
+        "competition": "Torneio Início Paulista",
+        "year": 1947
+      },
+      {
+        "competition": "Torneio Início Paulista",
+        "year": 1996
+      }
+    ]
+  }
+]
