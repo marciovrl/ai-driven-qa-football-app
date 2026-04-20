@@ -1,11 +1,12 @@
 import express from "express";
-import { TeamController } from "./controllers/teamController";
+import { teamRoutes } from "./routes/teamRoutes";
+import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
 
 app.use(express.json());
 
-// versioned route
-app.get("/api/v1/teams", TeamController.getAll);
+app.use("/api/v1/teams", teamRoutes);
+app.use(errorHandler);
 
 export default app;

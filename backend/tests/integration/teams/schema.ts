@@ -8,9 +8,9 @@ const titleSchema = Joi.object({
 export const teamSchema = Joi.object({
   id: Joi.number().required(),
   name: Joi.string().required(),
-  address: Joi.string().required(),
-  nickname: Joi.string().required(),
-  titles: Joi.array().items(titleSchema).optional()
+  address: Joi.string().allow(null).required(),
+  nickname: Joi.string().allow(null).required(),
+  titles: Joi.array().items(titleSchema).allow(null).required()
 });
 
 export const teamsSchema = Joi.array().items(teamSchema);
