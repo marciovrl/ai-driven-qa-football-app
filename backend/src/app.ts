@@ -13,6 +13,10 @@ app.use(
   })
 );
 
+app.get("/", (_req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 app.use("/api/v1/teams", teamRoutes);
 app.use(errorHandler);
 
