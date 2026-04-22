@@ -8,3 +8,10 @@ export const getTeams = async () => {
         .get(TEAMS_PATH)
         .set("accept", "application/json");
 };
+
+export const createTeam = async (payload: string | Record<string, unknown>) => {
+    return request(BASE_URL)
+        .post(TEAMS_PATH)
+        .send(payload)
+        .set("accept", "application/json");
+};
