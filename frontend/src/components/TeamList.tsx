@@ -19,10 +19,10 @@ export function TeamList({ teams }: TeamListProps) {
         <li key={team.id} className="team-card" data-testid={`team-card-${team.id}`}>
           <h2>{team.name}</h2>
           <p>
-            <strong>Nickname:</strong> {team.nickname}
+            <strong>Nickname:</strong> {team.nickname ?? '-'}
           </p>
           <p>
-            <strong>Address:</strong> {team.address}
+            <strong>Address:</strong> {team.address ?? '-'}
           </p>
         </li>
       ))}
