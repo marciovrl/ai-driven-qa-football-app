@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "ts-node-dev src/server.ts",
+    "lint": "tsc --noEmit",
     "build": "tsc",
     "start": "node dist/server.js",
     "test:unit": "jest /tests/unit",

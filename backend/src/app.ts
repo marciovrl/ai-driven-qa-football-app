@@ -5,11 +5,15 @@ import { teamRoutes } from "./routes/teamRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 
 const app = express();
+const allowedOriginRegex =
+  process.env.CORS_ORIGIN_REGEX != null
+    ? new RegExp(process.env.CORS_ORIGIN_REGEX)
+    : /^http:\/\/(localhost|frontend):\d+$/;
 
 app.use(express.json());
 app.use(
   cors({
-    origin: [/^http:\/\/localhost:\d+$/],
+    origin: [allowedOriginRegex],
   })
 );
 
