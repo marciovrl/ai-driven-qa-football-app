@@ -1,9 +1,10 @@
 import type { CreateTeamInput, Team } from '../types/team'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000'
+/** Same-origin paths; Vite `server.proxy` forwards /api to the backend in dev and Docker. */
+const TEAMS_URL = '/api/v1/teams'
 
 export async function getTeams(): Promise<Team[]> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/teams`)
+  const response = await fetch(TEAMS_URL)
 
   if (!response.ok) {
     throw new Error('Failed to load teams.')
@@ -13,7 +14,7 @@ export async function getTeams(): Promise<Team[]> {
 }
 
 export async function createTeam(input: CreateTeamInput): Promise<Team> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/teams`, {
+  const response = await fetch(TEAMS_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
