@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AddTeamModal } from '../components/AddTeamModal'
 import { TeamList } from '../components/TeamList'
 import { createTeam, getTeams } from '../services/teamService'
@@ -12,6 +12,7 @@ export function TeamsPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [createError, setCreateError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const createInFlight = useRef(false)
 
   useEffect(() => {
     async function loadTeams() {
@@ -31,6 +32,10 @@ export function TeamsPage() {
   }, [])
 
   async function handleCreateTeam(input: CreateTeamInput) {
+    if (createInFlight.current) {
+      return
+    }
+    createInFlight.current = true
     try {
       setCreateError('')
       setSuccessMessage('')
@@ -46,6 +51,7 @@ export function TeamsPage() {
       setCreateError(message)
     } finally {
       setIsCreating(false)
+      createInFlight.current = false
     }
   }
 

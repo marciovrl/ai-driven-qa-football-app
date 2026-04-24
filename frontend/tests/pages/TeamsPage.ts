@@ -24,7 +24,7 @@ export class TeamsPage {
   }
 
   teamCardByName(name: string): Locator {
-    return this.teamCards().filter({ hasText: name })
+    return this.teamCards().filter({ hasText: name }).first()
   }
 
   openAddTeamModalButton(): Locator {

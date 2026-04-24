@@ -1,12 +1,22 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
 import { TeamsPage } from '../pages/TeamsPage'
 
-const TEAMS_ENDPOINT = '**/api/v1/teams'
+function waitForTeamsListGet(page: Page) {
+  // Globs on full URLs (e.g. Vite + same-origin proxy) are brittle; assert pathname and GET.
+  return page.waitForResponse((r) => {
+    if (r.request().method() !== 'GET') return false
+    try {
+      return new URL(r.url()).pathname === '/api/v1/teams'
+    } catch {
+      return false
+    }
+  })
+}
 
 test.describe('Teams page', () => {
   test('should load page successfully', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
-    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamsResponsePromise = waitForTeamsListGet(page)
 
     await teamsPage.goto()
     const teamsResponse = await teamsResponsePromise
@@ -17,7 +27,7 @@ test.describe('Teams page', () => {
 
   test('should display list of items', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
-    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamsResponsePromise = waitForTeamsListGet(page)
 
     await teamsPage.goto()
     await teamsResponsePromise
@@ -29,7 +39,7 @@ test.describe('Teams page', () => {
 
   test('should render correct data', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
-    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamsResponsePromise = waitForTeamsListGet(page)
 
     await teamsPage.goto()
     await teamsResponsePromise
@@ -39,7 +49,7 @@ test.describe('Teams page', () => {
 
   test('should create a new team from modal', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
-    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamsResponsePromise = waitForTeamsListGet(page)
     const teamName = 'Philips Sport Vereniging'
 
     await teamsPage.goto()
@@ -65,7 +75,7 @@ test.describe('Teams page', () => {
 
   test('should keep add button disabled when team name is not provided', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
-    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamsResponsePromise = waitForTeamsListGet(page)
 
     await teamsPage.goto()
     await teamsResponsePromise
