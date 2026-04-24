@@ -176,3 +176,6 @@ dist
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,node,git
+
+# Local copy of PR analysis (CI uses runner temp)
+ai-qa-pr-analysis.md
