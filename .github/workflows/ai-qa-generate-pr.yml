@@ -1,0 +1,161 @@
+# 1) Analyze the PR diff (heuristic) for API and E2E test coverage.
+# 2) If a gap: generate tests (OpenAPI + Jest+Supertest for /api, Playwright e2e)
+#    and open a child PR. Merge still needs human/QA approval.
+#
+# Secrets: OPENAI_API_KEY (only used when a gap is detected)
+# Skips: draft, fork, head branch = main
+# All logic: node ai/script/qa.mjs (see ai/README.md) + secrets OPENAI_API_KEY
+
+name: AI QA (PR analysis, tests, child PR)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number (same repository only)"
+        required: true
+        type: string
+
+concurrency:
+  group: ai-qa-${{ github.event.inputs.pr_number || github.event.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate:
+    name: Analyze PR, add tests if needed, open child PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    if: |
+      (github.event_name == 'pull_request' && !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch')
+    steps:
+      - name: Resolve PR metadata
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            head_ref="${{ github.event.pull_request.head.ref }}"
+            if [ "$head_ref" = "main" ]; then
+              echo "skip_main=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip_main=false" >> "$GITHUB_OUTPUT"
+            fi
+            echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+            echo "base_sha=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+            echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+          else
+            n="${{ inputs.pr_number }}"
+            head_ref=$(gh pr view "$n" --json headRefName -q .headRefName)
+            if [ "$head_ref" = "main" ]; then
+              echo "skip_main=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "skip_main=false" >> "$GITHUB_OUTPUT"
+            fi
+            echo "pr_number=$n" >> "$GITHUB_OUTPUT"
+            base_sha=$(gh pr view "$n" --json baseRefOid -q .baseRefOid)
+            head_sha=$(gh pr view "$n" --json headRefOid -q .headRefOid)
+            echo "base_sha=$base_sha" >> "$GITHUB_OUTPUT"
+            echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            echo "head_ref=$head_ref" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log skip when head is main
+        if: success() && steps.pr.outputs.skip_main == 'true'
+        run: |
+          echo "This workflow is skipped when the PR head branch is 'main' (use a feature branch)."
+
+      - name: Checkout PR head
+        if: success() && steps.pr.outputs.skip_main != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.head_sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Switch to head branch
+        if: success() && steps.pr.outputs.skip_main != 'true'
+        run: |
+          set -eux
+          git checkout -B "${{ steps.pr.outputs.head_ref }}"
+
+      - name: Set up Node
+        if: success() && steps.pr.outputs.skip_main != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Analyze PR diff and test coverage
+        if: success() && steps.pr.outputs.skip_main != 'true'
+        id: analyze
+        env:
+          AI_QA_BASE_SHA: ${{ steps.pr.outputs.base_sha }}
+          AI_QA_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          AI_QA_REPORT_FILE: ${{ runner.temp }}/ai-qa-pr-analysis.md
+        run: node ai/script/qa.mjs analyze
+
+      - name: Comment on PR (analysis only on open / manual)
+        if: success() && steps.pr.outputs.skip_main != 'true' && (github.event_name == 'workflow_dispatch' || github.event.action == 'opened' || github.event.action == 'reopened')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment "${{ steps.pr.outputs.pr_number }}" --body-file "${{ runner.temp }}/ai-qa-pr-analysis.md"
+
+      - name: OpenAI — generate API + E2E tests
+        if: success() && steps.pr.outputs.skip_main != 'true' && steps.analyze.outputs.should_generate == 'true'
+        id: gen
+        env:
+          AI_QA_BASE_SHA: ${{ steps.pr.outputs.base_sha }}
+          AI_QA_HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: node ai/script/qa.mjs generate
+
+      - name: Build child commit / PR (per ai/guides/git-pr-and-branches.md)
+        if: success() && steps.pr.outputs.skip_main != 'true' && steps.analyze.outputs.should_generate == 'true' && steps.gen.outcome == 'success' && steps.gen.outputs.skip != 'true'
+        id: cpr
+        env:
+          PARENT_PR_NUM: ${{ steps.pr.outputs.pr_number }}
+          PR_AREA: ${{ steps.gen.outputs.pr_area }}
+          FILES: ${{ steps.gen.outputs.files }}
+          BASE_REF: ${{ steps.pr.outputs.head_ref }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+          CHILD_PR_BODY_FILE: ${{ runner.temp }}/ai-qa-child-pr-body.md
+        run: node ai/script/qa.mjs child
+
+      - name: Commit, push, open child PR
+        if: success() && steps.pr.outputs.skip_main != 'true' && steps.analyze.outputs.should_generate == 'true' && steps.gen.outcome == 'success' && steps.gen.outputs.skip != 'true' && steps.cpr.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BR: ${{ steps.cpr.outputs.child_branch }}
+          MSG: ${{ steps.cpr.outputs.commit_msg }}
+          TITLE: ${{ steps.cpr.outputs.pr_title }}
+          BASE_REF: ${{ steps.pr.outputs.head_ref }}
+        run: |
+          set -eux
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit after git add."
+            exit 0
+          fi
+          git commit -m "$MSG"
+          git push origin "HEAD:refs/heads/${BR}"
+          gh pr create \
+            --base "${BASE_REF}" \
+            --head "${BR}" \
+            --title "${TITLE}" \
+            --body-file "${{ runner.temp }}/ai-qa-child-pr-body.md"
