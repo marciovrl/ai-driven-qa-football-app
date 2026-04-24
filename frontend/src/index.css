@@ -6,6 +6,9 @@
   --text: #27272a;
   --text-muted: #71717a;
   --danger: #dc2626;
+  --success: #166534;
+  --success-bg: #dcfce7;
+  --success-border: #86efac;
 
   font-family:
     Inter,
@@ -28,6 +31,9 @@
     --text: #e4e4e7;
     --text-muted: #a1a1aa;
     --danger: #f87171;
+    --success: #86efac;
+    --success-bg: #1f2937;
+    --success-border: #14532d;
   }
 }
 

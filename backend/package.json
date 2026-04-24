@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test:unit": "jest /tests/unit",
-    "test:api": "jest /tests/integration"
+    "test:api": "jest /tests/integration",
+    "reset:data": "node scripts/resetTeamsData.js"
   },
   "keywords": [],
   "author": "",

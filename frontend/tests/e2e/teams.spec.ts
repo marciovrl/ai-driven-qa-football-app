@@ -17,19 +17,69 @@ test.describe('Teams page', () => {
 
   test('should display list of items', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
+    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
 
     await teamsPage.goto()
+    await teamsResponsePromise
 
     await expect(teamsPage.loadingMessage()).not.toBeVisible()
     await expect(teamsPage.teamsList()).toBeVisible()
-    await expect(teamsPage.teamCards()).toHaveCount(1)
+    expect(await teamsPage.teamCards().count()).toBeGreaterThan(0)
   })
 
   test('should render correct data', async ({ page }) => {
     const teamsPage = new TeamsPage(page)
+    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
 
     await teamsPage.goto()
+    await teamsResponsePromise
 
     await expect(teamsPage.teamCardByName('Associação Portuguesa de Desportos')).toBeVisible()
+  })
+
+  test('should create a new team from modal', async ({ page }) => {
+    const teamsPage = new TeamsPage(page)
+    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+    const teamName = 'Philips Sport Vereniging'
+
+    await teamsPage.goto()
+    await teamsResponsePromise
+    await expect(teamsPage.loadingMessage()).not.toBeVisible()
+
+    await teamsPage.openAddTeamModal()
+    await expect(teamsPage.addTeamModal()).toBeVisible()
+    await expect(teamsPage.teamSubmitButton()).toBeDisabled()
+
+    await teamsPage.fillTeamForm({
+      name: teamName,
+      nickname: 'PSV',
+      address: 'Eindhoven',
+    })
+    await expect(teamsPage.teamSubmitButton()).toBeEnabled()
+
+    await teamsPage.submitTeamForm()
+
+    await expect(teamsPage.teamCreateSuccessMessage()).toBeVisible()
+    await expect(teamsPage.teamCardByName(teamName)).toBeVisible()
+  })
+
+  test('should keep add button disabled when team name is not provided', async ({ page }) => {
+    const teamsPage = new TeamsPage(page)
+    const teamsResponsePromise = page.waitForResponse(TEAMS_ENDPOINT)
+
+    await teamsPage.goto()
+    await teamsResponsePromise
+    await expect(teamsPage.loadingMessage()).not.toBeVisible()
+
+    await teamsPage.openAddTeamModal()
+    await expect(teamsPage.addTeamModal()).toBeVisible()
+
+    await expect(teamsPage.teamSubmitButton()).toBeDisabled()
+    await teamsPage.fillTeamForm({
+      name: '   ',
+      nickname: 'No Name',
+      address: 'No Name Address',
+    })
+    await expect(teamsPage.teamSubmitButton()).toBeDisabled()
   })
 })

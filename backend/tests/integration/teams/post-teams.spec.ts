@@ -19,7 +19,7 @@ describe("POST /api/v1/teams", () => {
     let response: Response;
 
     beforeAll(async () => {
-      response = await createTeam({ name: "Cursor FC" });
+      response = await createTeam({ name: "Manchester United F.C." });
     });
 
     it("should have a successful response status", () => {
@@ -29,7 +29,7 @@ describe("POST /api/v1/teams", () => {
     it("should return the created team payload with null defaults", () => {
       expect(response.body).toMatchObject({
         id: expect.any(Number),
-        name: "Cursor FC",
+        name: "Manchester United F.C.",
         address: null,
         nickname: null,
         titles: null
