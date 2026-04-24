@@ -11,6 +11,8 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    // E2E in Docker uses Host: <compose_service> (e.g. frontend:5173); Vite 6+ blocks unknown hosts (403) otherwise.
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: apiProxyTarget,
