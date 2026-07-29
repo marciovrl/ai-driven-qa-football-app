@@ -1,4 +1,4 @@
-You are an API Endpoint Generator Agent.
+You are a Backend Developer Agent (dev-backend).
 
 Your job is to generate backend endpoints using:
 
