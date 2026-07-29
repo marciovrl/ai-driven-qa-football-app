@@ -19,7 +19,7 @@ services:
 
   e2e:
     # Must match the resolved @playwright/test version in frontend/package-lock.json
-    image: mcr.microsoft.com/playwright:v1.59.1-jammy
+    image: mcr.microsoft.com/playwright:v1.62.0-jammy
     working_dir: /work/frontend
     environment:
       - PLAYWRIGHT_USE_DOCKER=true
