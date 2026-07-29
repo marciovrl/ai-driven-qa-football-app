@@ -13,5 +13,16 @@ export const TeamController = {
     } catch (error) {
       return next(error);
     }
+  },
+  delete: (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const idParam = Array.isArray(req.params.id)
+        ? req.params.id[0]
+        : req.params.id;
+      const deletedTeam = TeamService.deleteTeam(idParam ?? "");
+      return res.status(200).json(deletedTeam);
+    } catch (error) {
+      return next(error);
+    }
   }
 };
