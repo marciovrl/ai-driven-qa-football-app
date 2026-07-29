@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AddTeamModal } from '../components/AddTeamModal'
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 import { TeamList } from '../components/TeamList'
-import { createTeam, getTeams } from '../services/teamService'
+import { createTeam, deleteTeam, getTeams } from '../services/teamService'
 import type { CreateTeamInput, Team } from '../types/team'
 
 export function TeamsPage() {
@@ -12,7 +13,12 @@ export function TeamsPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [createError, setCreateError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [teamToDelete, setTeamToDelete] = useState<Team | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [toastMessage, setToastMessage] = useState('')
   const createInFlight = useRef(false)
+  const deleteInFlight = useRef(false)
 
   useEffect(() => {
     async function loadTeams() {
@@ -30,6 +36,20 @@ export function TeamsPage() {
 
     void loadTeams()
   }, [])
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setToastMessage('')
+    }, 3000)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [toastMessage])
 
   async function handleCreateTeam(input: CreateTeamInput) {
     if (createInFlight.current) {
@@ -52,6 +72,31 @@ export function TeamsPage() {
     } finally {
       setIsCreating(false)
       createInFlight.current = false
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!teamToDelete || deleteInFlight.current) {
+      return
+    }
+    deleteInFlight.current = true
+
+    try {
+      setDeleteError('')
+      setIsDeleting(true)
+      await deleteTeam(teamToDelete.id)
+      setTeams((previousTeams) =>
+        previousTeams.filter((team) => team.id !== teamToDelete.id),
+      )
+      setTeamToDelete(null)
+      setToastMessage('Team deleted successfully.')
+    } catch (deleteTeamError) {
+      const message =
+        deleteTeamError instanceof Error ? deleteTeamError.message : 'Could not delete team.'
+      setDeleteError(message)
+    } finally {
+      setIsDeleting(false)
+      deleteInFlight.current = false
     }
   }
 
@@ -92,7 +137,15 @@ export function TeamsPage() {
         </p>
       )}
 
-      {!isLoading && !error && <TeamList teams={teams} />}
+      {!isLoading && !error && (
+        <TeamList
+          teams={teams}
+          onDeleteRequest={(team) => {
+            setDeleteError('')
+            setTeamToDelete(team)
+          }}
+        />
+      )}
 
       <AddTeamModal
         isOpen={isModalOpen}
@@ -106,6 +159,27 @@ export function TeamsPage() {
         }}
         onSubmit={handleCreateTeam}
       />
+
+      <ConfirmDeleteModal
+        team={teamToDelete}
+        isDeleting={isDeleting}
+        error={deleteError}
+        onCancel={() => {
+          if (!isDeleting) {
+            setTeamToDelete(null)
+            setDeleteError('')
+          }
+        }}
+        onConfirm={() => {
+          void handleConfirmDelete()
+        }}
+      />
+
+      {toastMessage && (
+        <div className="toast toast-success" data-testid="team-delete-success" role="status">
+          {toastMessage}
+        </div>
+      )}
     </main>
   )
 }

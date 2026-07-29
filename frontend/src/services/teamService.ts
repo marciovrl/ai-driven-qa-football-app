@@ -29,3 +29,16 @@ export async function createTeam(input: CreateTeamInput): Promise<Team> {
 
   return (await response.json()) as Team
 }
+
+export async function deleteTeam(id: number): Promise<Team> {
+  const response = await fetch(`${TEAMS_URL}/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const responseData = (await response.json().catch(() => null)) as { error?: string } | null
+    throw new Error(responseData?.error ?? 'Failed to delete team.')
+  }
+
+  return (await response.json()) as Team
+}
