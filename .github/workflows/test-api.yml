@@ -1,0 +1,21 @@
+name: Test API
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-api:
+    name: API tests (Jest + Supertest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build backend image
+        run: docker build -t football-backend-ci ./backend
+
+      - name: Run backend API tests
+        run: docker run --rm football-backend-ci npm run test:api
