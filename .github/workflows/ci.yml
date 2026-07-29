@@ -44,41 +44,12 @@ jobs:
       - name: Lint frontend
         run: docker run --rm football-frontend-ci npm run lint
 
-  test-backend:
-    runs-on: ubuntu-latest
+  test-api:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
-    steps:
-      - uses: actions/checkout@v5
-      - name: Build backend image
-        run: docker build -t football-backend-ci ./backend
+    uses: ./.github/workflows/test-api.yml
 
-      - name: Run backend tests
-        run: docker run --rm football-backend-ci npm run test:api
-
-  test-frontend:
-    runs-on: ubuntu-latest
+  test-e2e:
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
-    steps:
-      - uses: actions/checkout@v5
-      - name: Start backend and frontend containers
-        run: docker compose -f docker-compose.ci.yml up -d --build backend frontend
-
-      - name: Wait for backend and frontend
-        run: |
-          for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:3000/ >/dev/null && curl -fsS http://127.0.0.1:5173/ >/dev/null; then
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Services did not become healthy in time."
-          exit 1
-
-      - name: Run frontend e2e tests in Playwright container
-        run: docker compose -f docker-compose.ci.yml run --rm e2e
-
-      - name: Stop containers
-        if: always()
-        run: docker compose -f docker-compose.ci.yml down --remove-orphans
+    uses: ./.github/workflows/test-e2e.yml
