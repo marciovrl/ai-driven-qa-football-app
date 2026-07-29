@@ -96,6 +96,72 @@ export const swaggerDocument = {
           }
         }
       }
+    },
+    "/api/v1/teams/{id}": {
+      delete: {
+        tags: ["Teams"],
+        summary: "Delete a team by id",
+        parameters: [
+          {
+            name: "id",
+            in: "path",
+            required: true,
+            description: "Team id (positive integer)",
+            schema: {
+              type: "integer",
+              minimum: 1,
+              example: 1
+            }
+          }
+        ],
+        responses: {
+          "200": {
+            description: "Team deleted successfully",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/Team"
+                }
+              }
+            }
+          },
+          "400": {
+            description: "Invalid team id",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: {
+                      type: "string",
+                      example: "Invalid team id. Please provide a positive integer."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            description: "Team not found",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    error: {
+                      type: "string",
+                      example: "Team not found for the given id."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            description: "Internal server error"
+          }
+        }
+      }
     }
   },
   components: {

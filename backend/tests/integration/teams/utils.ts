@@ -15,3 +15,9 @@ export const createTeam = async (payload: string | Record<string, unknown>) => {
         .send(payload)
         .set("accept", "application/json");
 };
+
+export const deleteTeam = async (id: string | number) => {
+    return request(app)
+        .delete(`${TEAMS_PATH}/${id}`)
+        .set("accept", "application/json");
+};

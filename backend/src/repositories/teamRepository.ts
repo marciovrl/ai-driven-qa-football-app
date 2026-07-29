@@ -21,5 +21,18 @@ export const TeamRepository = {
     fs.writeFileSync(teamsPath, JSON.stringify(teams, null, 2), "utf-8");
 
     return newTeam;
+  },
+  deleteById: (id: number) => {
+    const teams = TeamRepository.getAll() as Team[];
+    const index = teams.findIndex((team) => team.id === id);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const [deletedTeam] = teams.splice(index, 1);
+    fs.writeFileSync(teamsPath, JSON.stringify(teams, null, 2), "utf-8");
+
+    return deletedTeam;
   }
 };
