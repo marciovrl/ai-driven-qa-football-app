@@ -99,32 +99,48 @@ Generate clean, readable, and maintainable E2E tests focused on:
 
 You MUST follow this structure:
 
-/tests
+/frontend/tests
+  test-fixtures.ts
   /e2e
   /pages
+    base.page.ts
+    <feature>.page.ts
+    <feature-action>.page.ts   # modals / dialogs when needed
 
 ## RESPONSIBILITIES
 
-### Page Objects (/tests/pages)
+### Page Objects (/frontend/tests/pages)
 
 - Encapsulate selectors and UI interactions
-- Use Playwright Page object
+- Extend `BasePage` (never duplicate Page wiring)
+- Use Playwright Page via `this.page` from `BasePage`
+- Call Playwright APIs directly (`this.page.getByTestId(...)`) — do NOT wrap them in no-op helpers
 - NO assertions inside Page Objects
 - Keep methods simple and reusable
+- Extract modals/dialogs into their own page objects
 
-### Tests (/tests/e2e)
+### Fixtures (/frontend/tests/test-fixtures.ts)
+
+- Extend Playwright `test` with page object fixtures
+- Register every page object as a fixture
+- Export `test` and `expect` from this file
+- Specs MUST import `{ test, expect }` from `../test-fixtures` (never from `@playwright/test` directly)
+
+### Tests (/frontend/tests/e2e)
 
 - Define test scenarios
 - Perform assertions (expect)
-- Use Page Objects for interactions
+- Receive page objects via fixtures (`{ teamPage, createTeamPage }`)
+- Do NOT manually instantiate page objects with `new`
 
 ## TECH RULES
 
 - Use Playwright test runner
 - Use async/await
-- Use test and expect from Playwright
+- Use `test` and `expect` from `test-fixtures.ts`
 - Use data-testid selectors ONLY (no fragile selectors)
 - Keep tests deterministic and stable
+
 
 ## TEST DESIGN RULES
 
@@ -135,17 +151,54 @@ You MUST follow this structure:
 
 ## PAGE OBJECT RULES
 
-- Constructor receives Page
-- Methods represent user actions or UI queries
+- Every page object extends `BasePage`
+- `BasePage` only owns `page` for now — keep it empty of helper wrappers
+- Methods represent user actions or UI queries (not thin Playwright pass-throughs unless they encode a selector)
+- One page object per screen; one page object per modal/dialog
 
 Example:
 
-class TeamsPage {
-  constructor(private page: Page) {}
-
-  async goto() {}
-  async getTeams() {}
+```ts
+// base.page.ts
+export abstract class BasePage {
+  constructor(protected readonly page: Page) {}
 }
+
+// team.page.ts
+export class TeamPage extends BasePage {
+  async goto() {}
+  teamsList(): Locator {
+    return this.page.getByTestId('teams-list')
+  }
+  async openAddTeamModal() {}
+}
+
+// create-team.page.ts
+export class CreateTeamPage extends BasePage {
+  modal(): Locator {
+    return this.page.getByTestId('add-team-modal')
+  }
+  async fillForm(input: { name: string; nickname?: string; address?: string }) {}
+  async submit() {}
+}
+
+// test-fixtures.ts
+type FrameworkFixtures = {
+  teamPage: TeamPage
+  createTeamPage: CreateTeamPage
+}
+
+export const test = base.extend<FrameworkFixtures>({
+  teamPage: async ({ page }, use) => {
+    await use(new TeamPage(page))
+  },
+  createTeamPage: async ({ page }, use) => {
+    await use(new CreateTeamPage(page))
+  },
+})
+
+export { expect }
+```
 
 ## DEFAULT BASE URL
 
@@ -153,8 +206,14 @@ http://localhost:5173
 
 ## NAMING CONVENTION
 
-- Page Object: TeamsPage.ts
-- Test file: teams.spec.ts or get-teams.spec.ts
+- Files: kebab-case + `.page.ts` suffix
+  - Base: `base.page.ts` → class `BasePage`
+  - Screen: `team.page.ts` → class `TeamPage`
+  - Modal/dialog: `create-team.page.ts` → class `CreateTeamPage`
+- Multi-word features: `custom-reports.page.ts` → class `CustomReportsPage`
+- Fixtures: `test-fixtures.ts`
+- Test file: one behavior/flow per file — `get-teams.spec.ts`, `create-team.spec.ts`
+- Do NOT use PascalCase filenames like `TeamsPage.ts`
 
 ## REQUIRED TEST CASES (for list pages)
 
@@ -166,8 +225,12 @@ http://localhost:5173
 
 You MUST generate:
 
-1. Page Object file
-2. E2E test file
+1. Page Object file(s) extending `BasePage` (plus modal page object when the flow includes a modal)
+2. Register new page objects in `test-fixtures.ts`
+3. E2E test file using fixtures (`import { test, expect } from '../test-fixtures'`)
+
+When creating a new screen page object, reuse existing `base.page.ts` and `test-fixtures.ts` — do not recreate them.
+
 
 ## EXAMPLE INPUT
 
@@ -180,9 +243,13 @@ You MUST generate:
 - Do NOT include explanations unless asked
 - Do NOT use XPath or CSS selectors without data-testid
 - Do NOT place assertions inside Page Objects
+- Do NOT put modal selectors/actions inside the screen page object — use a dedicated `*.page.ts`
+- Do NOT import `test`/`expect` from `@playwright/test` in specs — use `test-fixtures.ts`
+- Do NOT manually `new` page objects inside specs — use fixtures
 
 ## AVOID
 
 - Complex abstractions
 - Reusable commands layer
 - Overengineering
+- PascalCase page filenames (`TeamsPage.ts`)
