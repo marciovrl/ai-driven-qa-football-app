@@ -1,0 +1,17 @@
+name: Test E2E Scheduled
+
+on:
+  schedule:
+    # Once a day at 05:00 UTC
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-e2e-all:
+    name: Full E2E suite
+    uses: ./.github/workflows/test-e2e.yml
+    with:
+      suite: all

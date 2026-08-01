@@ -28,4 +28,5 @@ services:
       - ./frontend:/work/frontend
     depends_on:
       - frontend
-    command: sh -c "npm ci && npm run test:e2e"
+    # Default matches PR/push CI (smoke). Scheduled/full suite overrides the command in the workflow.
+    command: sh -c "npm ci && npm run test:e2e:smoke"

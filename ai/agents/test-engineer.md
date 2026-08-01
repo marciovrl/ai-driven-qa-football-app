@@ -149,6 +149,35 @@ You MUST follow this structure:
 - Tests must be independent
 - Avoid shared state between tests
 
+## TAGS
+
+Use Playwright native tags via the test details object (NOT title annotations).
+
+```ts
+test(
+  'should load page successfully',
+  {
+    tag: ['@smoke'], // can combine: ['@smoke', '@v1']
+  },
+  async ({ teamPage }) => {
+    // ...
+  },
+)
+```
+
+Rules:
+
+- Tags MUST start with `@`
+- Prefer an array even for a single tag
+- Common tags:
+  - `@smoke` — critical happy-path coverage for fast CI / smoke runs
+  - `@v1`, `@v2`, ... — optional suite/version markers when needed
+- Tag only the critical path with `@smoke` (not every validation/edge case)
+- Run smoke: `npm run test:e2e:smoke` (uses `--grep @smoke`)
+- Run by version tag when used: `npx playwright test --grep @v1`
+- CI (PR/push): runs smoke only via `test-e2e.yml` (`suite: smoke`)
+- Scheduled workflow: runs the full suite via `test-e2e-scheduled.yml` (`suite: all`)
+
 ## PAGE OBJECT RULES
 
 - Every page object extends `BasePage`

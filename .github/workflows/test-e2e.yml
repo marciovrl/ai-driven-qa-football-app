@@ -2,14 +2,27 @@ name: Test E2E
 
 on:
   workflow_call:
+    inputs:
+      suite:
+        description: Which E2E suite to run (`smoke` or `all`)
+        type: string
+        default: smoke
   workflow_dispatch:
+    inputs:
+      suite:
+        description: Which E2E suite to run
+        type: choice
+        options:
+          - smoke
+          - all
+        default: smoke
 
 permissions:
   contents: read
 
 jobs:
   test-e2e:
-    name: E2E tests (Playwright)
+    name: E2E tests (${{ inputs.suite }})
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -29,7 +42,15 @@ jobs:
           exit 1
 
       - name: Run frontend e2e tests in Playwright container
-        run: docker compose -f docker-compose.ci.yml run --rm e2e
+        env:
+          E2E_SUITE: ${{ inputs.suite }}
+        run: |
+          if [ "$E2E_SUITE" = "all" ]; then
+            SCRIPT="test:e2e"
+          else
+            SCRIPT="test:e2e:smoke"
+          fi
+          docker compose -f docker-compose.ci.yml run --rm e2e sh -c "npm ci && npm run ${SCRIPT}"
 
       - name: Stop containers
         if: always()

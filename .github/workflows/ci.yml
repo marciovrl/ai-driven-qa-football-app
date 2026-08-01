@@ -53,3 +53,5 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
     uses: ./.github/workflows/test-e2e.yml
+    with:
+      suite: smoke
