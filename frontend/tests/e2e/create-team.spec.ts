@@ -10,21 +10,27 @@ test.describe('Create team', () => {
     await expect(createTeamPage.submitButton()).toBeDisabled()
   })
 
-  test('should create a new team from modal', async ({ teamPage, createTeamPage }) => {
-    const teamName = 'Philips Sport Vereniging'
+  test(
+    'should create a new team from modal',
+    {
+      tag: ['@smoke'],
+    },
+    async ({ teamPage, createTeamPage }) => {
+      const teamName = 'Philips Sport Vereniging'
 
-    await createTeamPage.fillForm({
-      name: teamName,
-      nickname: 'PSV',
-      address: 'Eindhoven',
-    })
-    await expect(createTeamPage.submitButton()).toBeEnabled()
+      await createTeamPage.fillForm({
+        name: teamName,
+        nickname: 'PSV',
+        address: 'Eindhoven',
+      })
+      await expect(createTeamPage.submitButton()).toBeEnabled()
 
-    await createTeamPage.submit()
+      await createTeamPage.submit()
 
-    await expect(createTeamPage.successMessage()).toBeVisible()
-    await expect(teamPage.teamCardByName(teamName)).toBeVisible()
-  })
+      await expect(createTeamPage.successMessage()).toBeVisible()
+      await expect(teamPage.teamCardByName(teamName)).toBeVisible()
+    },
+  )
 
   test('should keep add button disabled when team name is not provided', async ({
     createTeamPage,
