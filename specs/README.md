@@ -1,8 +1,7 @@
 # `/specs` — behavioral test specs
 
 Living specs for what the product should do. Written in Gherkin-style `.feature`
-files so humans, the **test-planner** agent, and the **test-engineer** agent share
-the same source of truth.
+files so humans and agents share the same source of truth.
 
 These files describe **behavior**, not how to click the UI or call the API.
 
