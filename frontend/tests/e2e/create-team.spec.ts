@@ -27,7 +27,8 @@ test.describe('Create team', () => {
 
       await createTeamPage.submit()
 
-      await expect(createTeamPage.successMessage()).toBeVisible()
+      await expect(createTeamPage.successToast()).toBeVisible()
+      await expect(createTeamPage.successToast()).toHaveText('Team added successfully.')
       await expect(teamPage.teamCardByName(teamName)).toBeVisible()
     },
   )

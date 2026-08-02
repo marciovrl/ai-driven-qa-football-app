@@ -12,7 +12,6 @@ export function TeamsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [createError, setCreateError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -58,13 +57,12 @@ export function TeamsPage() {
     createInFlight.current = true
     try {
       setCreateError('')
-      setSuccessMessage('')
       setIsCreating(true)
 
       const createdTeam = await createTeam(input)
       setTeams((previousTeams) => [...previousTeams, createdTeam])
-      setSuccessMessage('Team added successfully.')
       setIsModalOpen(false)
+      setToastMessage('Team added successfully.')
     } catch (createTeamError) {
       const message =
         createTeamError instanceof Error ? createTeamError.message : 'Could not create team.'
@@ -110,7 +108,6 @@ export function TeamsPage() {
           className="primary-button"
           data-testid="open-add-team-modal"
           onClick={() => {
-            setSuccessMessage('')
             setCreateError('')
             setIsModalOpen(true)
           }}
@@ -118,12 +115,6 @@ export function TeamsPage() {
           Add Team
         </button>
       </header>
-
-      {successMessage && (
-        <p data-testid="team-create-success" className="success">
-          {successMessage}
-        </p>
-      )}
 
       {isLoading && (
         <p data-testid="teams-loading" className="muted">
@@ -176,7 +167,7 @@ export function TeamsPage() {
       />
 
       {toastMessage && (
-        <div className="toast toast-success" data-testid="team-delete-success" role="status">
+        <div className="toast toast-success" data-testid="success-toast" role="status">
           {toastMessage}
         </div>
       )}

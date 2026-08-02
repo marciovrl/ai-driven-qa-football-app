@@ -22,8 +22,8 @@ export class CreateTeamPage extends BasePage {
     return this.page.getByTestId('team-submit-button')
   }
 
-  successMessage(): Locator {
-    return this.page.getByTestId('team-create-success')
+  successToast(): Locator {
+    return this.page.getByTestId('success-toast')
   }
 
   errorMessage(): Locator {
