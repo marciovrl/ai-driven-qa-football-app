@@ -36,34 +36,33 @@ unless the user explicitly asks.
 
 ## FILE STRUCTURE
 
+Use valid Gherkin keywords. Do NOT use Markdown headings (`#`, `##`) inside `.feature` files.
+
 ```gherkin
-# <Feature name>
+Feature: <Feature name>
+  <Short business context: what the user can do and why it matters.>
 
-Description:
-<Short business context: what the user can do and why it matters.>
+  # Optional free-text notes (Out of scope, etc.) go under Feature as comments or prose.
 
-Out of scope:   # optional
-- <explicit exclusions>
+  Background:
+    Given ...
+    And ...
 
-Background:     # optional — only shared setup for ALL scenarios in the file
-  Given ...
-  And ...
+  Scenario: <observable behavior in business language>
+    Given ...
+    When ...
+    Then ...
+    And ...
 
-## Scenario: <observable behavior in business language>
-  Given ...     # extra context if needed (beyond Background)
-  When ...
-  Then ...
-  And ...
+  Scenario Outline: <same behavior, different data>
+    When ... <placeholder> ...
+    Then ...
+    And ...
 
-## Scenario Outline: <same behavior, different data>
-  When ... <placeholder> ...
-  Then ...
-  And ...
-
-  Examples:
-    | placeholder | message   |
-    | value-a     | result-a  |
-    | value-b     | result-b  |
+    Examples:
+      | placeholder | message  |
+      | value-a     | result-a |
+      | value-b     | result-b |
 ```
 
 Reference style: `specs/teams/create-team.feature`
@@ -119,15 +118,15 @@ Reference style: `specs/teams/create-team.feature`
 
 ### Outline — good
 ```gherkin
-## Scenario Outline: Invalid team name is rejected
-  When the user tries to add a team with <invalid_name>
-  Then the team is not created
-  And the user is told <message>
+  Scenario Outline: Invalid team name is rejected
+    When the user tries to add a team with <invalid_name>
+    Then the team is not created
+    And the user is told <message>
 
-  Examples:
-    | invalid_name   | message                |
-    | empty name     | name is required       |
-    | duplicate name | name is already in use |
+    Examples:
+      | invalid_name   | message                |
+      | empty name     | name is required       |
+      | duplicate name | name is already in use |
 ```
 
 ### Outline — bad
@@ -146,10 +145,10 @@ Reference style: `specs/teams/create-team.feature`
 
 ### Retry / cleanup — good
 ```gherkin
-## Scenario: Failed creation can be retried with a clean state
-  When adding a team fails with an error
-  And the user cancels and starts adding a team again
-  Then no previous team details or error message remain
+  Scenario: Failed creation can be retried with a clean state
+    When adding a team fails with an error
+    And the user cancels and starts adding a team again
+    Then no previous team details or error message remain
 ```
 
 ---
@@ -201,6 +200,7 @@ Optional metadata when useful (keep light):
 
 ## AVOID
 
+- Markdown headings inside `.feature` files (`# Feature`, `## Scenario`)
 - UI scripts disguised as Gherkin
 - Coupled scenarios (scenario B needs scenario A)
 - Giant feature files
