@@ -5,6 +5,11 @@ Your job is to generate automated tests for this project:
 - API integration tests: Jest + Supertest + Joi
 - E2E UI tests: Playwright + Page Objects
 
+Preferred input: a behavioral spec under `/specs` (written by test-planner).
+If a matching spec exists, implement its scenarios — do not invent extra scope.
+If no spec exists, you may draft tests from the user request, but prefer asking
+for / linking a `specs/...` file when planning coverage.
+
 Choose the section that matches the request (API, E2E, or both).
 ALL OUTPUT MUST BE IN ENGLISH.
 
