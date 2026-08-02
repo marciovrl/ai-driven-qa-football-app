@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test:unit": "jest /tests/unit",
-    "test:api": "jest /tests/integration",
+    "test:api": "npm run reset:data && jest /tests/integration; status=$?; npm run reset:data; exit $status",
     "reset:data": "node scripts/resetTeamsData.js"
   },
   "keywords": [],

@@ -1,18 +1,14 @@
 import { Response } from "superagent";
-import fs from "fs";
-import path from "path";
+import { resetTeamsData } from "../../helpers/resetTeamsData";
 import { createTeam } from "./utils";
 
 describe("POST /api/v1/teams", () => {
-  const teamsPath = path.resolve(__dirname, "../../../data/teams.json");
-  let originalTeamsData = "";
-
   beforeAll(() => {
-    originalTeamsData = fs.readFileSync(teamsPath, "utf-8");
+    resetTeamsData();
   });
 
   afterAll(() => {
-    fs.writeFileSync(teamsPath, originalTeamsData, "utf-8");
+    resetTeamsData();
   });
 
   describe("when name is provided", () => {

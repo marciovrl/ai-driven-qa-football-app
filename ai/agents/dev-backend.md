@@ -101,10 +101,8 @@ For every endpoint, generate:
 
 # 📁 JSON STORAGE RULE
 
-- Data stored in /src/data/*.json
-- Example:
-  - teams.json
-  - titles.json
+- Seed data lives in `/data/teams.base.json` (committed)
+- Runtime mutable copy is `/data/teams.json` (gitignored; rebuilt from base on server start / after tests)
 
 ---
 

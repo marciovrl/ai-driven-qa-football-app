@@ -1,19 +1,15 @@
 import { Response } from "superagent";
-import fs from "fs";
-import path from "path";
+import { resetTeamsData } from "../../helpers/resetTeamsData";
 import { createTeam, deleteTeam } from "./utils";
 import { teamSchema } from "./schema";
 
 describe("DELETE /api/v1/teams/:id", () => {
-  const teamsPath = path.resolve(__dirname, "../../../data/teams.json");
-  let originalTeamsData = "";
-
   beforeAll(() => {
-    originalTeamsData = fs.readFileSync(teamsPath, "utf-8");
+    resetTeamsData();
   });
 
   afterAll(() => {
-    fs.writeFileSync(teamsPath, originalTeamsData, "utf-8");
+    resetTeamsData();
   });
 
   describe("when team id is valid and exists", () => {
